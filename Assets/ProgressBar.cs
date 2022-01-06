@@ -29,7 +29,6 @@ public class ProgressBar : MonoBehaviour
                 else
                 {
                     progress = value;
-                    Debug.Log(progress);
                 }
             }
         }

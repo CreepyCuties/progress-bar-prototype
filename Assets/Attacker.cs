@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Collections;
+using System.Timers;
 
 public class Attacker : MonoBehaviour
 {
@@ -82,6 +84,7 @@ public class Attacker : MonoBehaviour
                 {
                     progressBar.Progress += element.amount;
                     elements[index] = elementHandler.handleElement(element.clone());
+                    additionalElementHandle(elementType, other.gameObject.GetComponent<Attacker>());
                 }
                 else
                 {
@@ -117,14 +120,6 @@ public class Attacker : MonoBehaviour
                 progressBar.Progress = 0;
                 StartCoroutine("unlock");
             }
-            if (poisonElementIndex >= 0 && GUILayout.Button($"{tabs}{tag} Poison Damage"))
-            {
-                var element = elements[fireElementIndex];
-                element.amount = 50 * element.baseAmount;
-                elements[fireElementIndex] = element;
-                progressBar.Progress = 0;
-                StartCoroutine("unlock");
-            }
         }
     }
     
@@ -136,5 +131,35 @@ public class Attacker : MonoBehaviour
         {
             elements[i] = initialElements[i].clone();
         }
+    }
+
+    private void additionalElementHandle(Elements elementType, Attacker other)
+    {
+        switch (elementType)
+        {
+            case Elements.Poison:
+                StartCoroutine("dot", other);
+                return;
+            default:
+                return;
+        }
+    }
+
+    IEnumerator dot(Attacker other)
+    {
+        var timer = new Timer(100);
+        var poisonElement = elements.Find(element => element.element == Elements.Poison);
+        timer.Elapsed += (sender, args) =>
+        {
+            other.HP -= Mathf.Floor(poisonElement.baseAmount / 100);
+            Debug.Log("DOT is taking effect");
+        };
+
+        timer.Enabled = true;
+        yield return new WaitForSeconds(1);
+        Debug.Log("End of DOT Effect");
+        timer.Stop();
+        timer.Enabled = false;
+        timer.Dispose();
     }
 }
