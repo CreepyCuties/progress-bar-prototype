@@ -767,7 +767,7 @@ MonoBehaviour:
   hP: 200
   guiIndenter: 0
   damage: 10
-  defense: 0
+  defense: 70
   speed: 10
   left: 276
   right: 275

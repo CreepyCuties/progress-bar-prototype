@@ -34,6 +34,8 @@ public class Attacker : MonoBehaviour
     private List<Element> elements;
     private List<Element> initialElements;
     public ElementHandler elementHandler;
+    
+    private float accumulatedDamage;
 
     // Start is called before the first frame update
     void Start()
@@ -70,20 +72,23 @@ public class Attacker : MonoBehaviour
 
     private void OnCollisionEnter(Collision other)
     {
-        var enemy = other.gameObject.GetComponent<Attacker>();
+        
         if (isAttacking)
         {
+            var enemy = other.gameObject.GetComponent<Attacker>();
+            var damageTaken = damage - enemy.defense + accumulatedDamage;
+            accumulatedDamage = 0;
+            enemy.HP -= damageTaken > 0 ? damageTaken : 0;
             for (int i = 0; i < elements.Count; i++)
             {
                 var element = elements[i];
                 var elementType = element.element;
-                enemy.HP -= element.amount;
                 var index = elements.FindIndex(elem => elem.element == elementType);
                 
                 if (!progressBar.locked)
                 {
-                    progressBar.Progress += element.amount;
-                    elements[index] = elementHandler.handleElement(element.clone());
+                    progressBar.Progress += element.factor;
+                    accumulatedDamage += elementHandler.handleElement(element);
                     additionalElementHandle(elementType, other.gameObject.GetComponent<Attacker>());
                 }
                 else
@@ -115,8 +120,7 @@ public class Attacker : MonoBehaviour
             if (fireElementIndex >= 0 && GUILayout.Button($"{tabs}{tag} Fire Damage"))
             {
                 var element = elements[fireElementIndex];
-                element.amount = 50 * element.baseAmount;
-                elements[fireElementIndex] = element;
+                accumulatedDamage += 50 * element.factor;
                 progressBar.Progress = 0;
                 StartCoroutine("unlock");
             }
@@ -126,7 +130,7 @@ public class Attacker : MonoBehaviour
     IEnumerator unlock()
     {
         yield return new WaitForSeconds(3);
-        this.progressBar.locked = false;
+       progressBar.locked = false;
         for (int i = 0; i < initialElements.Count; i++)
         {
             elements[i] = initialElements[i].clone();
@@ -151,7 +155,7 @@ public class Attacker : MonoBehaviour
         var poisonElement = elements.Find(element => element.element == Elements.Poison);
         timer.Elapsed += (sender, args) =>
         {
-            other.HP -= Mathf.Floor(poisonElement.baseAmount / 100);
+            other.HP -= Mathf.Floor(poisonElement.factor / 100);
             Debug.Log("DOT is taking effect");
         };
 

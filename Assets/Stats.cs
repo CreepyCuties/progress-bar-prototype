@@ -1,20 +1,19 @@
 public class Stats
 {
     public float damage;
-    public float fireDamage;
-    public float movementSpeed;
+    public float defense;
 
-    public Stats(float damage, float fireDamage)
+    public Stats(float damage, float defense)
     {
         this.damage = damage;
-        this.fireDamage = fireDamage;
+        this.defense = damage;
     }
     public void Deconstruct(
-        out float damage, 
-        out float fireDamage
+        out float damage,
+        out float defense
     )
     {
         damage = this.damage;
-        fireDamage = this.fireDamage;
+        defense = this.defense;
     }
 }

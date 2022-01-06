@@ -1,33 +1,30 @@
 using System;
+using UnityEngine.Serialization;
 
 [Serializable]
 public struct Element
 {
-    public float amount;
-    public float baseAmount;
+    [FormerlySerializedAs("baseAmount")] public float factor;
     public Elements element;
 
-    public Element(float amount, float baseAmount, Elements element)
+    public Element(float factor, Elements element)
     {
-        this.amount = amount;
         this.element = element;
-        this.baseAmount = baseAmount;
+        this.factor = factor;
     }
     
     public void Deconstruct(
-        out float amount, 
-        out float baseAmount,
+        out float factor,
         out Elements element
     )
     {
-        amount = this.amount;
-        baseAmount = this.baseAmount;
+        factor = this.factor;
         element = this.element;
     }
 
     public Element clone()
     {
-        var (amount, baseAmount, element) = this;
-        return new Element(amount, baseAmount, element);
+        var (baseAmount, element) = this;
+        return new Element(baseAmount, element);
     }
 }

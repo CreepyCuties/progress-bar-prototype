@@ -7,17 +7,16 @@ public class ElementHandler : MonoBehaviour
     public GameObject progressBar;
     public List<Element> elements;
     // Start is called before the first frame update
-    public Element handleElement(Element element)
+    public float handleElement(Element element)
     {
         var elementType = element.element;
         Debug.Log($"{elementType} element effect triggered");
         switch (elementType)
         {
             case Elements.Fire:
-                element.amount += element.baseAmount / 10;
-                return element;
+                return element.factor / 10;
             default:
-                return element;
+                return 0;
         }
     }
     
