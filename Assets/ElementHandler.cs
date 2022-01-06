@@ -20,4 +20,9 @@ public class ElementHandler : MonoBehaviour
                 return element;
         }
     }
+    
+    public int getElementIndex(Elements elementType)
+    {
+        return elements.FindIndex(element => element.element == elementType);
+    }
 }

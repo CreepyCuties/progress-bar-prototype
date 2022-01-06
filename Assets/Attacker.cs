@@ -31,15 +31,13 @@ public class Attacker : MonoBehaviour
     private ProgressBar progressBar;
     private List<Element> elements;
     private List<Element> initialElements;
-    private ElementHandler handler;
     public ElementHandler elementHandler;
 
     // Start is called before the first frame update
     void Start()
     {
-        handler = this.elementHandler.GetComponent<ElementHandler>();
-        elements = handler.elements;
-        progressBar = handler.progressBar.GetComponent<ProgressBar>();
+        elements = elementHandler.elements;
+        progressBar = elementHandler.progressBar.GetComponent<ProgressBar>();
 
         initialElements = new List<Element>();
         for (int i = 0; i < elements.Count; i++)
@@ -76,13 +74,14 @@ public class Attacker : MonoBehaviour
             for (int i = 0; i < elements.Count; i++)
             {
                 var element = elements[i];
+                var elementType = element.element;
                 enemy.HP -= element.amount;
-                var index = elements.FindIndex(elem => elem.element == element.element);
+                var index = elements.FindIndex(elem => elem.element == elementType);
                 
                 if (!progressBar.locked)
                 {
                     progressBar.Progress += element.amount;
-                    elements[index] = handler.handleElement(element.clone());
+                    elements[index] = elementHandler.handleElement(element.clone());
                 }
                 else
                 {
@@ -108,12 +107,21 @@ public class Attacker : MonoBehaviour
         GUILayout.Button($"{tabs}{tag} ProgressBar: {progressBar.Progress}");
         if (progressBar.Progress >= progressBar.cap)
         {
-            if (GUILayout.Button($"{tabs}{tag} Fire Damage"))
+            int fireElementIndex = elementHandler.getElementIndex(Elements.Fire);
+            int poisonElementIndex = elementHandler.getElementIndex(Elements.Poison);
+            if (fireElementIndex >= 0 && GUILayout.Button($"{tabs}{tag} Fire Damage"))
             {
-                var index = elements.FindIndex(elem => elem.element == Elements.Fire);
-                var element = elements[index];
+                var element = elements[fireElementIndex];
                 element.amount = 50 * element.baseAmount;
-                elements[index] = element;
+                elements[fireElementIndex] = element;
+                progressBar.Progress = 0;
+                StartCoroutine("unlock");
+            }
+            if (poisonElementIndex >= 0 && GUILayout.Button($"{tabs}{tag} Poison Damage"))
+            {
+                var element = elements[fireElementIndex];
+                element.amount = 50 * element.baseAmount;
+                elements[fireElementIndex] = element;
                 progressBar.Progress = 0;
                 StartCoroutine("unlock");
             }
