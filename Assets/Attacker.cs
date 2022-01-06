@@ -34,7 +34,8 @@ public class Attacker : MonoBehaviour
     private List<Element> elements;
     private List<Element> initialElements;
     public ElementHandler elementHandler;
-    
+
+    private Attacker enemy;
     private float accumulatedDamage;
 
     // Start is called before the first frame update
@@ -75,7 +76,7 @@ public class Attacker : MonoBehaviour
         
         if (isAttacking)
         {
-            var enemy = other.gameObject.GetComponent<Attacker>();
+            enemy = other.gameObject.GetComponent<Attacker>();
             var damageTaken = damage - enemy.defense + accumulatedDamage;
             accumulatedDamage = 0;
             enemy.HP -= damageTaken > 0 ? damageTaken : 0;
@@ -89,7 +90,7 @@ public class Attacker : MonoBehaviour
                 {
                     progressBar.Progress += element.factor;
                     accumulatedDamage += elementHandler.handleElement(element);
-                    additionalElementHandle(elementType, other.gameObject.GetComponent<Attacker>());
+                    additionalElementHandle(elementType);
                 }
                 else
                 {
@@ -121,8 +122,12 @@ public class Attacker : MonoBehaviour
             {
                 var element = elements[fireElementIndex];
                 accumulatedDamage += 50 * element.factor;
-                progressBar.Progress = 0;
-                StartCoroutine("unlock");
+                resetProgressBar();
+            }
+            if (poisonElementIndex >= 0 && GUILayout.Button($"{tabs}{tag} Poison Damage"))
+            {
+                StartCoroutine("takeDamageOverTime", new ElementHandleObject(1, 3));
+                resetProgressBar();
             }
         }
     }
@@ -137,33 +142,41 @@ public class Attacker : MonoBehaviour
         }
     }
 
-    private void additionalElementHandle(Elements elementType, Attacker other)
+    private void additionalElementHandle(Elements elementType)
     {
+        ElementHandleObject elementHandleObject = new ElementHandleObject(100, 1);
         switch (elementType)
         {
             case Elements.Poison:
-                StartCoroutine("dot", other);
+                StartCoroutine("takeDamageOverTime", elementHandleObject);
                 return;
             default:
                 return;
         }
     }
 
-    IEnumerator dot(Attacker other)
+    IEnumerator takeDamageOverTime(ElementHandleObject elementHandleObject)
     {
+        var (divider, waitingSecond) = elementHandleObject;
         var timer = new Timer(100);
         var poisonElement = elements.Find(element => element.element == Elements.Poison);
         timer.Elapsed += (sender, args) =>
         {
-            other.HP -= Mathf.Floor(poisonElement.factor / 100);
+            enemy.HP -= Mathf.Floor(poisonElement.factor / divider);
             Debug.Log("DOT is taking effect");
         };
 
         timer.Enabled = true;
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(waitingSecond);
         Debug.Log("End of DOT Effect");
         timer.Stop();
         timer.Enabled = false;
         timer.Dispose();
+    }
+
+    private void resetProgressBar()
+    {
+        progressBar.Progress = 0;
+        StartCoroutine("unlock");
     }
 }
